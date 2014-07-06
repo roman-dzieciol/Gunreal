@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModBuild 
+xmlns="ModBuild"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="ModBuild ModBuild.xsd"
+Version="1">
+    
+
+    <!-- ****************************************************************** -->
+    <!--                                 GUNREAL                                    -->
+    <!-- ****************************************************************** -->
+    
+    <Sequence>        
+        <ActionRef Id="Init" />
+        <ActionRef Id="PrepareFiles" />
+        <ActionRef Id="CreateZIP" />
+        <ActionRef Id="CreateMSI" />
+        <ActionRef Id="CreateUpdaterInfo" />         
+    </Sequence>
+    
+    <Action Id="Init">
+        <ActionRef Id="InitVariables" />
+        <ActionRef Id="GetModVersion" />
+        <ActionRef Id="InitVersionItems" />
+    </Action>
+    
+    <Action Id="PrepareFiles">
+        <ActionRef Id="GatherFiles" />
+        <ActionRef Id="CreateInfoFiles" />
+    </Action>
+    
+    <Action Id="CreateMSI">
+        <ActionRef Id="wixInit" />
+        <ActionRef Id="wixEnumerateFiles" />
+        <ActionRef Id="wixImportComponents" />
+        <ActionRef Id="wixCompile" />
+        <ActionRef Id="wixLink" />
+        <ActionRef Id="wixCompress" />
+        <ActionRef Id="wixArchive" />
+    </Action>
+    
+    
+    <!-- ****************************************************************** -->
+    <!--                                  INITIALIZE                                    -->
+    <!-- ****************************************************************** -->
+    
+	<!-- ACTION: InitVariables - Init environment for other actions -->
+    <Action Id="InitVariables">
+    
+		<!-- Check built-in vars -->
+		<RequireVar Id="DirProject" />
+		<RequireVar Id="ProjectName" />
+        
+        <!-- Common variables -->
+        <Var Id="ModName">Gunreal</Var>
+        <Var Id="ModHomeURL">http://www.gunreal.com/</Var>
+        <Var Id="ModSupportURL">http://www.gunreal.com/forum/</Var>
+        <Var Id="ModChangelogURL">http://www.gunreal.com/latest.htm#</Var>
+        
+        <!-- File paths -->
+        <Path Id="ModBuildLog" File="[ModName]Build.log" />
+        <Path Id="ModINI" File="[ModName].ini" />
+        <Path Id="ModUserINI" File="[ModName]User.ini" />
+        
+        <!-- Directory paths -->
+        <Path Id="DirGame" Dir="[DirProject]../../" Normalize="yes" />
+        <Path Id="DirGameSystem" Dir="[DirGame]System" />
+        <Path Id="DirMod" Dir="[DirGame][ModName]" />
+        <Path Id="DirModSystem" Dir="[DirMod]System" />
+        <Path Id="DirInstaller" Dir="[DirMod]Installer" />
+        <Path Id="DirInstallerFiles" Dir="[DirInstaller]Files" />
+        <Path Id="DirInstallerMod" Dir="[DirInstallerFiles][ModName]" />
+        <Path Id="DirInstallerSystem" Dir="[DirInstallerMod]System" />
+        
+        <!-- Do not modify files outside of installer files dir -->
+        <Sandbox Id="[DirModSystem]" />
+        <Sandbox Id="[DirInstallerFiles]" />
+        
+        <!-- Those dirs must exist -->
+        <DirExists Id="[DirGame]" />
+        <DirExists Id="[DirGameSystem]" />
+        <DirExists Id="[DirMod]" />
+        <DirExists Id="[DirModSystem]" />
+        <DirExists Id="[DirInstaller]" />
+
+    </Action>
+    
+    <Action Id="GetModVersion">
+        <GetSVNVersion 
+            IdVersion="VersionNum" 
+            IdName="VersionName" 
+            IdFile="VersionSafeName" 
+            AllowRange="no" 
+            AllowModified="yes" 
+            AllowSwitched="no"
+            Repository="http://tools.assembla.com/svn/gunreal/UT2004/trunk/GunrealDEV"
+            WorkingCopy="[DirMod]"
+            />
+    </Action>
+    
+	<!-- ACTION: InitVersionItems - Init items depending on version variables -->    
+    <Action Id="InitVersionItems">
+    
+		<!-- Check vars -->
+		<RequireVar Id="VersionSafeName" />
+    
+		<!-- Init output directory -->    
+        <Path Id="DirRelease" Dir="[DirInstaller][VersionSafeName]" />     
+        <Sandbox Id="[DirRelease]" />
+        <DirMake Id="[DirRelease]" />          
+    
+		<!-- Empty output directory and make sure its empty -->
+		<ActionRef Id="mbDelTree" Quiet="yes" DIR="[DirRelease]" />
+        <DirEmpty Id="[DirRelease]" />        
+        
+        <!-- Release file names-->
+        <Path Id="msiInstallerFile" File="[ModName]Installer_v[VersionSafeName]_Win" />
+        <Path Id="ArchiveName" File="[ModName]_v[VersionSafeName]_Any" />
+        
+    </Action>
+   
+     
+    <!-- ****************************************************************** -->
+    <!--                  PREPARE RELEASE FILES                        -->
+    <!-- ****************************************************************** -->
+
+	<!-- ACTION: GatherFiles - Copy all files that should go into release into the [InstallerFiles] folder -->
+    <Action Id="GatherFiles">
+            
+        <!--Empty installer dir, make sure it's empty -->
+		<ActionRef Id="mbDelTree" Quiet="yes" DIR="[DirInstallerFiles]" />
+        <DirEmpty Id="[DirInstallerFiles]" />  
+        
+        <!--Create installer directories -->
+        <DirMake Id="[DirInstallerFiles]" />
+        <DirMake Id="[DirInstallerMod]" />
+        <DirMake Id="[DirInstallerSystem]" />   
+        <DirMake Id="[DirInstallerMod]" />
+        <DirMake Id="[DirInstallerMod]Help" />
+        <DirMake Id="[DirInstallerMod]Maps" />
+        <DirMake Id="[DirInstallerMod]Music" />
+        <DirMake Id="[DirInstallerMod]Content" />
+        <DirMake Id="[DirInstallerMod]System" />
+            
+        <!-- Copy misc files -->
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="System/Default.ini" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="System/DefUser.ini" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="System/[ModName].int" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="System/[ModName].ucl" />
+        
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="UT2K4Mod.ini" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="Updater.exe" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="UpdaterMirrors.xml" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="UpdaterMirrors.xsd" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="UpdaterPackages.xsd" />
+        
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="Help/[ModName] Website.url" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="Help/[ModName] Forum.url" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="Help/[ModName].ico" />
+        <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="Help/[ModName]Logo.bmp" />
+        
+        
+        <!-- Copy scripts, localization and cache -->
+        <ForEachFile Path="[DirModSystem]*.u" >
+            <FileCopy From="[DirModSystem]" To="[DirInstallerSystem]" File="[ForEach?FullName]" />
+            <FileExists Id="[DirModSystem][ForEach?Name].int" Optional="yes" >
+				<FileCopy From="[DirModSystem]" To="[DirInstallerSystem]" File="[ForEach?Name].int" />
+            </FileExists>
+            <FileExists Id="[DirModSystem][ForEach?Name].ucl" Optional="yes" >
+				<FileCopy From="[DirModSystem]" To="[DirInstallerSystem]" File="[ForEach?Name].ucl" />
+            </FileExists>
+        </ForEachFile>
+        
+        
+        <!-- Copy batch files -->
+        <ForEachFile Path="[DirModSystem]Config*.bat" >
+            <FileCopy From="[DirModSystem]" To="[DirInstallerSystem]" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+        <ForEachFile Path="[DirMod]*.bat" >
+            <FileCopy From="[DirMod]" To="[DirInstallerMod]" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+        
+        <!-- Hardlink music -->
+        <ForEachFile Path="[DirMod]Music/*.ogg" >
+            <Hardlink From="[DirMod]Music/" To="[DirInstallerMod]Music/" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+        <!-- Hardlink sounds -->
+        <ForEachFile Path="[DirMod]ContentDEV/*.uax" >
+            <Hardlink From="[DirMod]ContentDEV/" To="[DirInstallerMod]Content/" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+        <!-- Hardlink static meshes -->
+        <ForEachFile Path="[DirMod]ContentDEV/*.usx" >
+            <Hardlink From="[DirMod]ContentDEV/" To="[DirInstallerMod]Content/" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+        <!-- Hardlink textures -->
+        <ForEachFile Path="[DirMod]ContentDEV/*.utx" >
+            <Hardlink From="[DirMod]ContentDEV/" To="[DirInstallerMod]Content/" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+        <!-- Hardlink animations -->
+        <ForEachFile Path="[DirMod]ContentDEV/*.ukx" >
+            <Hardlink From="[DirMod]ContentDEV/" To="[DirInstallerMod]Content/" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+        <!-- Hardlink maps -->
+        <ForEachFile Path="[DirMod]Maps/*.ut2" >
+            <Hardlink From="[DirMod]Maps/" To="[DirInstallerMod]Maps/" File="[ForEach?FullName]" />
+        </ForEachFile>
+        
+    </Action>
+
+	<!-- ACTION: CreateInfoFiles - Create files describing the release -->
+    <Action Id="CreateInfoFiles">
+       
+        <!-- Write version to file -->
+		<Var Id="BuildVersionText"><![CDATA[\[[ModName]Version\]
+[ModName]Version=[VersionNum]]]></Var>
+        <FileWrite Id="[DirInstallerMod]System\BuildVersion.int" Encoding="ANSI" >[BuildVersionText]</FileWrite>
+        
+        
+        <!-- Create MD5 file -->
+		<Var Id="MD5data"></Var>
+        <FileRemove Id="[DirInstallerMod]MD5.md5" Optional="yes"/>
+        <ForEachFile Path="[DirInstallerMod]*.*" Recurse="yes" >
+            <Ignore Id="*.md5" />
+            <Ignore Id="*.bat" />
+            <Ignore Id="*.log" />
+            <Ignore Id="*.ico" />
+            <Ignore Id="*.ogg" />
+            
+             <!-- Write MD5 -->
+            <MD5File Id="MD5" Value="[ForEach]" />
+            <Path Id="ForEachRel" File="[ForEach]" Relative="[DirInstallerMod]" />
+            <FileWrite Id="[DirInstallerMod]MD5.md5" Mode="Append">[MD5] *[ForEachRel]\n</FileWrite>
+            <Var Id="MD5data" Quiet="yes">[MD5data][MD5]</Var>
+        </ForEachFile>
+        
+        <!-- Write Comments -->
+        <MD5String Id="MD5sum" Value="[MD5data]" />
+        <FileWrite Id="[DirInstallerMod]MD5.md5" Mode="Prepend">; SUM=[MD5sum]\n</FileWrite>
+        <FileWrite Id="[DirInstallerMod]MD5.md5" Mode="Prepend">; VER=[VersionNum]\n</FileWrite>        
+        
+    </Action>
+    
+
+    <!-- ****************************************************************** -->
+    <!--                             ZIP RELEASE                                  -->
+    <!-- ****************************************************************** -->
+
+    <!-- ACTION: CreateZIP - Package release into zip file -->
+    <Action Id="CreateZIP">
+        
+        <!-- Create ZIP file -->
+        <Launch><![CDATA[ 7z.exe a -tzip -x!.svn -x!.svn\\* -mx5 "[DirRelease][ArchiveName].zip" "[DirInstallerFiles]*" ]]></Launch>
+        
+    </Action>
+
+
+    <!-- ****************************************************************** -->
+    <!--                 WINDOWS RELEASE                                  -->
+    <!-- ****************************************************************** -->
+
+    
+    <Action Id="wixInit">
+        
+        <!-- Switch to release dir for convenience -->
+        <SetCurrentDir Id="[DirRelease]" />
+        
+        <!-- Variables -->
+        <Path Id="msiScript" File="GunrealInstaller" />
+        <Path Id="msiFiles" File="[msiScript]Files" />
+        <Path Id="msiUI" File="[msiScript]UI" />       
+        <Path Id="msiLocFile" File="[msiScript]-en-us.wxl" />
+        <Var Id="msiVersion">1.0.[VersionNum]</Var>
+        
+        <!-- Prepare files -->
+        <FileCopy From="[DirInstaller]" To="[DirRelease]" File="[msiScript].wxs" Overwrite="yes" />
+        <FileCopy From="[DirInstaller]" To="[DirRelease]" File="[msiUI].wxs" Overwrite="yes" />
+        
+    </Action>
+    
+    
+	<!-- ACTION: wixEnumerateFiles - Include Files directory -->
+    <Action Id="wixEnumerateFiles">
+    
+        <!-- Enumerate directory -->
+        <ActionRef Id="wixEnumerateDir" Quiet="yes" DIR="[DirInstallerMod]" OUTPUT="[msiFiles].wxs" />
+        
+		<!-- Modify file list -->
+        <xmlDocument File="[msiFiles].wxs" Quiet="yes">
+        
+			<!-- Make some files hidden -->
+			<xmlAttributeSet XPath='/Wix/Fragment/DirectoryRef/Component/File[@Id="UT2K4Mod.ini"]' Name="Hidden" Value="yes" />
+			<xmlAttributeSet XPath='/Wix/Fragment/DirectoryRef/Component/File[@Id="UpdaterMirrors.xml"]' Name="Hidden" Value="yes" />
+			<xmlAttributeSet XPath='/Wix/Fragment/DirectoryRef/Component/File[@Id="UpdaterMirrors.xsd"]' Name="Hidden" Value="yes" />
+			<xmlAttributeSet XPath='/Wix/Fragment/DirectoryRef/Component/File[@Id="UpdaterPackages.xsd"]' Name="Hidden" Value="yes" />
+		
+        </xmlDocument>
+        
+    </Action>    
+    
+    
+	<!-- ACTION: wixImportComponents - Import components to main wix script -->
+    <Action Id="wixImportComponents">
+    
+        <!-- Prepare files -->
+        <FileCopy From="[DirInstaller]" To="[DirRelease]" File="[msiScript].wxs" Overwrite="yes" />
+        
+        <!-- Import components to main wix file -->
+        <xmlDocument File="[msiScript].wxs" Quiet='yes'> 
+        
+			<!-- Import Files file list -->
+			<ActionRef Id="wixImportComponent" Quiet='yes' DIR="Binaries" FILE="[msiFiles].wxs" />    
+		
+		</xmlDocument>
+                
+    </Action>
+    
+    
+	<!-- ACTION: wixCompile -Compile WiX scripts -->
+    <Action Id="wixCompile">
+        
+        <!-- Compile installer script -->
+        <FileRemove Id="[msiFiles].wixobj" Optional="yes" />
+        <FileRemove Id="[msiBScript].wixobj" Optional="yes" />
+        <FileRemove Id="[msiUI].wixobj" Optional="yes" />
+        <Launch><![CDATA[ candle.exe -pedantic -nologo -ext WiXUtilExtension -ext WiXUIExtension -dVersion="[msiVersion]" -dSetupName="[ModName]" -dGameName="[ModName]" -dModHomeURL="[ModHomeURL]" -dModSupportURL="[ModSupportURL]" [msiFiles].wxs [msiScript].wxs [msiUI].wxs ]]></Launch>
+       
+    </Action>
+    
+    
+	<!-- ACTION: wixLink - Create final MSI file -->
+    <Action Id="wixLink">
+    
+        <!-- Create MSI file -->
+        <FileRemove Id="[msiInstallerFile].msi" Optional="yes" />
+		<Launch><![CDATA[ light.exe -pedantic -nologo -dcl:none -cultures:en-us -loc ../[msiLocFile] -ext WiXUtilExtension -ext WiXUIExtension -out [msiInstallerFile].msi [msiFiles].wixobj [msiScript].wixobj [msiUI].wixobj ]]></Launch>
+        
+    </Action>
+    
+        
+	<!-- ACTION: wixCompress - Wrap MSI in 7z self-extracting module and archive installer source files -->
+    <Action Id="wixCompress">
+	
+        <!-- Bootstrapper vars -->
+        <Path Id="sfxModule" File="7zS.sfx" />
+        <Path Id="sfxConfig" File="7zConfig.txt" />
+        
+        <!-- Write Bootstrapper config -->
+        <FileRemove Id="[DirRelease][sfxConfig]" Optional="yes" />
+        <Var Id="sfxConfigText"><![CDATA[;!@Install@!UTF-8!
+Title="Extracting [ModName]"
+Progress="yes"
+ExecuteFile="[msiInstallerFile].msi"
+;!@InstallEnd@!]]></Var>
+        <FileWrite Id="[DirRelease][sfxConfig]" Encoding="UTF-8" >[sfxConfigText]</FileWrite>
+        
+        
+        <!-- Compress MSI file -->
+        <FileRemove Id="[DirRelease][msiInstallerFile].7z" Optional="yes" />
+        <Launch><![CDATA[ 7z.exe a -t7z -mx5 [msiInstallerFile].7z [msiInstallerFile].msi ]]></Launch>
+        
+        <!-- Create final file -->
+        <FileRemove Id="[DirRelease][msiInstallerFile].exe" Optional="yes" />
+        <FileRemove Id="[DirRelease][msiInstallerFile].tmp" Optional="yes" />
+        <FileConcat Id="[msiInstallerFile].tmp" First="[DirInstaller][sfxModule]" Second="[sfxConfig]" />
+        <FileConcat Id="[msiInstallerFile].exe" First="[msiInstallerFile].tmp" Second="[msiInstallerFile].7z" />
+        
+    </Action>
+    
+            
+	<!-- ACTION: wixArchive - Archive installer source files -->
+    <Action Id="wixArchive">
+    
+        <!-- Archive temp files -->
+        <FileRemove Id="[msiInstallerFile]-Source.7z" Optional="yes" />
+        <Launch><![CDATA[7z.exe a -t7z -mx9 [msiInstallerFile]-Source.7z [msiUI].wxs]]></Launch>
+        <Launch><![CDATA[7z.exe a -t7z -mx9 [msiInstallerFile]-Source.7z [msiFiles].wxs]]></Launch>
+        <Launch><![CDATA[7z.exe a -t7z -mx9 [msiInstallerFile]-Source.7z [msiScript].wxs]]></Launch>
+        <Launch><![CDATA[7z.exe a -t7z -mx9 [msiInstallerFile]-Source.7z [msiUI].wixobj]]></Launch>
+        <Launch><![CDATA[7z.exe a -t7z -mx9 [msiInstallerFile]-Source.7z [msiFiles].wixobj]]></Launch>
+        <Launch><![CDATA[7z.exe a -t7z -mx9 [msiInstallerFile]-Source.7z [msiScript].wixobj]]></Launch>
+        <Launch><![CDATA[7z.exe a -t7z -mx9 [msiInstallerFile]-Source.7z [msiInstallerFile].wixpdb]]></Launch>
+        
+        <!-- Remove temp files -->
+        <FileRemove Id="[DirRelease][msiUI].wxs" />
+        <FileRemove Id="[DirRelease][msiFiles].wxs" />
+        <FileRemove Id="[DirRelease][msiScript].wxs" />
+        <FileRemove Id="[DirRelease][msiUI].wixobj" />
+        <FileRemove Id="[DirRelease][msiFiles].wixobj" />
+        <FileRemove Id="[DirRelease][msiScript].wixobj" />
+        <FileRemove Id="[DirRelease][msiInstallerFile].wixpdb" />
+        <FileRemove Id="[DirRelease][msiInstallerFile].msi" />
+        <FileRemove Id="[DirRelease][msiInstallerFile].tmp" />
+        <FileRemove Id="[DirRelease][msiInstallerFile].7z" />
+        <FileRemove Id="[DirRelease][sfxConfig]" />
+         
+    </Action>
+
+
+    <!-- ****************************************************************** -->
+    <!--                           MOD UPDATER                                  -->
+    <!-- ****************************************************************** -->
+
+	<!-- ACTION: CreateUpdaterInfo - Create Packages.xml file for ModUpdater -->
+    <Action Id="CreateUpdaterInfo">
+    
+        <!-- MD5 the release files -->
+        <MD5File Id="ReleaseMD5" Value="[DirRelease][msiInstallerFile].exe" />
+        <MD5File Id="ArchiveMD5" Value="[DirRelease][ArchiveName].zip" />
+    
+        <!-- Create packages manifest file  -->
+		<Path Id="PackageInfo" Dir="[DirRelease]" File="Packages_v[VersionNum].xml" />
+		<FileWrite Id="[PackageInfo]" ><![CDATA[<?xml version="1.0" encoding="UTF-8"?>\n<packages xmlns="UpdaterPackages" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="UpdaterPackages UpdaterPackages.xsd" />]]></FileWrite>
+		
+        <!-- Populate packages manifest file -->
+        <xmlDocument File="[PackageInfo]" Quiet='yes'> 
+			
+			<!-- Write packages format  -->
+			<xmlElementAdd XPath='/packages' Name="format">
+				<xmlElementAdd XNode='xmlElementAdd' Name="revision" Value="1" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="compatible" Value="1" />
+			</xmlElementAdd>
+		
+			<!-- Write packages info  -->
+			<xmlElementAdd XPath='/packages' Name="info">
+				<xmlElementAdd XNode='xmlElementAdd' Name="version" Value="[VersionNum]" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="changelog" Value="[ModChangelogURL][VersionNum]" />
+			</xmlElementAdd>
+		
+			<!-- Write windows installer info  -->
+			<xmlElementAdd XPath='/packages' Name="package">
+				<xmlElementAdd XNode='xmlElementAdd' Name="name" Value="[ModName] v[VersionSafeName] Windows Installer" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="file" Value="[msiInstallerFile].exe" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="mirrors" >
+					<xmlForEach File="[DirInstallerMod]UpdaterMirrors.xml" XPath="/updater/mirrors/url">
+						<xmlElementAdd XNode='xmlElementAdd' Name="url" Value="[xmlForEach?InnerText][msiInstallerFile].exe" />
+					</xmlForEach>
+				</xmlElementAdd>
+				<xmlElementAdd XNode='xmlElementAdd' Name="platform" Value="Win" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="type" Value="Installer" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="requires" Value="0" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="md5" Value="[ReleaseMD5]" />
+			</xmlElementAdd>
+		
+			<!-- Write zip archive info  -->
+			<xmlElementAdd XPath='/packages' Name="package">
+				<xmlElementAdd XNode='xmlElementAdd' Name="name" Value="[ModName] v[VersionSafeName] ZIP Archive" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="file" Value="[ArchiveName].zip" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="mirrors" >
+					<xmlForEach File="[DirInstallerMod]UpdaterMirrors.xml" XPath="/updater/mirrors/url">
+						<xmlElementAdd XNode='xmlElementAdd' Name="url" Value="[xmlForEach?InnerText][ArchiveName].zip" />
+					</xmlForEach>
+				</xmlElementAdd>
+				<xmlElementAdd XNode='xmlElementAdd' Name="platform" Value="Any" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="type" Value="Archive" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="requires" Value="0" />
+				<xmlElementAdd XNode='xmlElementAdd' Name="md5" Value="[ArchiveMD5]" />
+			</xmlElementAdd>
+			
+        </xmlDocument> 
+	
+        <!-- Verify  -->
+        <FileCopy From="[DirMod]" To="[DirRelease]" File="UpdaterPackages.xsd" Overwrite="yes" />
+        <Launch><![CDATA[[DirInstaller]XMLValidate.exe [PackageInfo]]]></Launch>
+        <FileRemove Id="[DirRelease]UpdaterPackages.xsd" />
+    
+        <!-- Write latest version info  -->
+        <FileWrite Id="[DirRelease]Latest.txt" Encoding="ANSI" >[VersionNum]</FileWrite>
+        
+    </Action>
+
+</ModBuild>

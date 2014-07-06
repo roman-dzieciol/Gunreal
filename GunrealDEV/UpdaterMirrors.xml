@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updater
+xmlns="UpdaterMirrors"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="UpdaterMirrors UpdaterMirrors.xsd">
+	<mirrors>
+		<url><![CDATA[http://www.gunreal.com/updater/]]></url>
+		<url><![CDATA[http://www.deefrag.com/gunreal/updater/]]></url>
+	</mirrors>
+</updater>

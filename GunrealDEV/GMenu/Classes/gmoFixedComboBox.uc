@@ -1,0 +1,14 @@
+// ============================================================================
+//  gmoFixedComboBox.uc ::
+// ============================================================================
+//  Copyright 2005-2008 The Gunreal Team :: http://www.gunreal.com
+// ============================================================================
+class gmoFixedComboBox extends gmoComboBox;
+
+
+
+DefaultProperties
+{
+    ComponentClassName="GMenu.gGUIFixedComboBox"
+
+}

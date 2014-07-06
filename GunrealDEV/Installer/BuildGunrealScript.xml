@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModBuild 
+xmlns="ModBuild"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="ModBuild ModBuild.xsd"
+Version="1">
+    
+
+    <!-- ****************************************************************** -->
+    <!--                                 GUNREAL                                    -->
+    <!-- ****************************************************************** -->
+    
+    <Sequence>        
+        <ActionRef Id="Init" />
+        <ActionRef Id="Compile" />
+    </Sequence>
+    
+    <Action Id="Init">
+        <ActionRef Id="InitVariables" />
+        <ActionRef Id="GetModVersion" />
+    </Action>
+    
+    
+    <!-- ****************************************************************** -->
+    <!--                                  INITIALIZE                                    -->
+    <!-- ****************************************************************** -->
+    
+	<!-- ACTION: InitVariables - Init environment for other actions -->
+    <Action Id="InitVariables">
+    
+		<!-- Check built-in vars -->
+		<RequireVar Id="DirProject" />
+		<RequireVar Id="ProjectName" />
+        
+        <!-- Common variables -->
+        <Var Id="ModName">Gunreal</Var>
+        <Var Id="ModHomeURL">http://www.gunreal.com/</Var>
+        <Var Id="ModSupportURL">http://www.gunreal.com/forum/</Var>
+        <Var Id="ModChangelogURL">http://www.gunreal.com/latest.htm#</Var>
+        
+        <!-- File paths -->
+        <Path Id="ModBuildLog" File="[ModName]Build.log" />
+        <Path Id="ModINI" File="[ModName].ini" />
+        <Path Id="ModUserINI" File="[ModName]User.ini" />
+        
+        <!-- Directory paths -->
+        <Path Id="DirGame" Dir="[DirProject]../../" Normalize="yes" />
+        <Path Id="DirGameSystem" Dir="[DirGame]System" />
+        <Path Id="DirMod" Dir="[DirGame][ModName]" />
+        <Path Id="DirModSystem" Dir="[DirMod]System" />
+        <Path Id="DirInstaller" Dir="[DirMod]Installer" />
+        <Path Id="DirInstallerFiles" Dir="[DirInstaller]Files" />
+        <Path Id="DirInstallerMod" Dir="[DirInstallerFiles][ModName]" />
+        <Path Id="DirInstallerSystem" Dir="[DirInstallerMod]System" />
+        
+        <!-- Do not modify files outside of installer files dir -->
+        <Sandbox Id="[DirModSystem]" />
+        <Sandbox Id="[DirInstallerFiles]" />
+        
+        <!-- Those dirs must exist -->
+        <DirExists Id="[DirGame]" />
+        <DirExists Id="[DirGameSystem]" />
+        <DirExists Id="[DirMod]" />
+        <DirExists Id="[DirModSystem]" />
+        <DirExists Id="[DirInstaller]" />
+
+    </Action>
+    
+    <Action Id="GetModVersion">
+        <GetSVNVersion 
+            IdVersion="VersionNum" 
+            IdName="VersionName" 
+            IdFile="VersionSafeName" 
+            AllowRange="no" 
+            AllowModified="yes" 
+            AllowSwitched="no"
+            Repository="http://tools.assembla.com/svn/gunreal/UT2004/trunk/GunrealDEV"
+            WorkingCopy="[DirMod]"
+            />
+    </Action>
+    
+    
+    <!-- ****************************************************************** -->
+    <!--                          COMPILE MOD                                   -->
+    <!-- ****************************************************************** -->
+    	
+	<!-- ACTION: Compile - Compile the mod -->
+    <Action Id="Compile">
+        
+        <!-- Remove script files -->
+        <ForEachFile Path="[DirModSystem]G*.u" >
+            <FileRemove Id="[ForEach]" />
+        </ForEachFile>
+        
+        <!-- Reset ini's if they exist -->
+        <FileRemove Id="[DirModSystem][ModINI]" Optional="yes" />
+        <FileRemove Id="[DirModSystem][ModUserINI]" Optional="yes" />
+            
+        <!-- Compile scripts -->
+        <Launch><![CDATA[ [DirGameSystem]ucc.exe make -MOD=[ModName] -LOG=[DirProject][ModBuildLog] ]]></Launch>
+        
+        <!-- Export localization -->
+        <ForEachFile Path="[DirModSystem]*.u" >
+            <Launch><![CDATA[ [DirGameSystem]ucc.exe Editor.DumpINT [ForEach?FullName] -mod=[ModName] ]]></Launch>
+            <FileExists Id="[DirGameSystem][ForEach?Name].int" Optional="yes" >
+				<FileCopy  From="[DirGameSystem]" To="[DirModSystem]" File="[ForEach?Name].int" Overwrite="yes" />
+            </FileExists>
+        </ForEachFile>
+        
+        <!-- Export cache -->
+        <ForEachFile Path="[DirModSystem]*.u" >
+            <Launch><![CDATA[ [DirGameSystem]ucc.exe Engine.ExportCache [ForEach?FullName] -mod=[ModName] ]]></Launch>
+        </ForEachFile>
+            
+    </Action>
+
+
+</ModBuild>

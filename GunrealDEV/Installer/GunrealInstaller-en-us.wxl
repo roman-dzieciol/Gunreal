@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+    
+		
+    <!-- Installer bitmaps -->
+		    
+    <String Id="AdvancedWelcomeEulaDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="BrowseDlgWixUI_Bmp_Up" Overridable="yes">MB_UI_Bmp_Up</String>
+    <String Id="BrowseDlgWixUI_Bmp_UpTooltip" Overridable="yes">Up one level</String>
+    <String Id="BrowseDlgNewFolder" Overridable="yes">MB_UI_Bmp_New</String>
+    <String Id="BrowseDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="CancelDlgIcon" Overridable="yes">MB_UI_Ico_Info</String>
+    <String Id="CustomizeDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="DiskCostDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="ErrorDlgErrorIcon" Overridable="yes">MB_UI_Ico_Info</String>
+    <String Id="ExitDialogBitmap" Overridable="yes">MB_UI_Bmp_DialogS</String>
+    <String Id="FatalErrorBitmap" Overridable="yes">MB_UI_Bmp_Dialog</String>
+    <String Id="FeaturesDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="FilesInUseBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="InstallDirDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="InstallScopeDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="InvalidDirDlgIcon" Overridable="yes">MB_UI_Ico_Info</String>
+    <String Id="LicenseAgreementDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="MaintenanceTypeDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="MaintenanceWelcomeDlgBitmap" Overridable="yes">MB_UI_Bmp_Dialog</String>
+    <String Id="MsiRMFilesInUseBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="OutOfDiskDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="OutOfRbDiskDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="PrepareDlgBitmap" Overridable="yes">MB_UI_Bmp_Dialog</String>
+    <String Id="ProgressDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="ResumeDlgBitmap" Overridable="yes">MB_UI_Bmp_Dialog</String>
+    <String Id="SetupTypeDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="UserExitBitmap" Overridable="yes">MB_UI_Bmp_Dialog</String>
+    <String Id="VerifyReadyDlgBannerBitmap" Overridable="yes">MB_UI_Bmp_Banner</String>
+    <String Id="WaitForCostingDlgIcon" Overridable="yes">MB_UI_Ico_Exclam</String>
+    <String Id="WelcomeDlgBitmap" Overridable="yes">MB_UI_Bmp_Dialog</String>
+    <String Id="WelcomeEulaDlgBitmap" Overridable="yes">MB_UI_Bmp_Dialog</String>
+    
+    
+    <!-- Misc -->
+    <String Id="MB_NewerVersionFound" Overridable="yes">A newer version of [ProductName] is already installed. If you really want to downgrade uninstall it first.</String>
+    
+    
+		
+    <!-- MB_InvalidUT2K4DirDlg -->
+    
+    <String Id="InvalidUT2K4DirDlg_Title" Overridable="yes">[ProductName] Setup</String>
+    <String Id="InvalidUT2K4DirDlgText" Overridable="yes">Destination folder does not contain Unreal Tournament 2004. Go Back to change it.</String>
+    <String Id="InvalidUT2K4DirDlgIcon" Overridable="yes">MB_UI_Ico_Exclam</String>
+    <String Id="InvalidUT2K4DirDlgIconTooltip" Overridable="yes">Warning icon</String>
+    
+		
+    <!-- MB_InvalidUT2K4VersionDlg -->
+    
+    <String Id="InvalidUT2K4VersionDlg_Title" Overridable="yes">[ProductName] Setup</String>
+    <String Id="InvalidUT2K4VersionDlgTextUnable" Overridable="yes">[ProductName] requires UT2004 version [MB_UT2K4VERSION_REQ] or newer. Setup was unable to determine your UT2004 version.</String>
+    <String Id="InvalidUT2K4VersionDlgTextTooOld" Overridable="yes">[ProductName] requires UT2004 version [MB_UT2K4VERSION_REQ] or newer. Your UT2004 version ([MB_UT2K4VERSION]) is out of date.</String>
+    <String Id="InvalidUT2K4VersionDlgIcon" Overridable="yes">MB_UI_Ico_Exclam</String>
+    <String Id="InvalidUT2K4VersionDlgIconTooltip" Overridable="yes">Warning icon</String>
+    
+    
+    <!-- MB_InstallDirDlg -->
+
+    <String Id="MB_InstallDirDlg_Title" Overridable="yes">[ProductName] Setup</String>
+    <String Id="MB_InstallDirDlgChange" Overridable="yes">&amp;Change...</String>
+    <String Id="MB_InstallDirDlgTitle" Overridable="yes">{\WixUI_Font_Title}Destination Folder</String>
+    <String Id="MB_InstallDirDlgDescription" Overridable="yes">Click Next to install to the default folder or click Change to choose another</String>
+    <String Id="MB_InstallDirDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+    <String Id="MB_InstallDirDlgFolderNote" Overridable="yes">Note: [ProductName] should be installed to your Unreal Tournament 2004 folder.</String>
+    <String Id="MB_InstallDirDlgFolderLabel" Overridable="yes">Install [ProductName] to:</String>
+    <String Id="MB_InstallDirDlgInstall" Overridable="yes">&amp;Install</String>
+
+
+</WixLocalization>

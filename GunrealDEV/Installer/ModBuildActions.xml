@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModBuildActions 
+xmlns="ModBuild"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="ModBuild ModBuild.xsd"
+Version="1">
+
+    
+    <!-- ****************************************************************** -->
+    <!--                           GENERIC HELPERS                          -->
+    <!-- ****************************************************************** -->
+    
+    <!-- ACTION: mbDelTree - delete all contents of a directory -->
+    <Action Id="mbDelTree" DIR="Directory path"> 
+        
+        <!-- Remove release files -->
+        <ForEachFile Path="[mbDelTree_DIR]*.*" Recurse="yes" >
+            <FileRemove Id="[ForEach]" />
+        </ForEachFile>
+        
+        <!-- Remove release dirs -->
+        <ForEachDir Path="[mbDelTree_DIR]" Recurse="yes" Reverse="yes" >
+            <DirRemove Id="[ForEach]" />
+        </ForEachDir>
+        
+    </Action>
+    
+    
+    <!-- ****************************************************************** -->
+    <!--                           WIX HELPERS                                    -->
+    <!-- ****************************************************************** -->    
+    
+    <!-- ACTION: wixEnumerateDir - enumerates files in target directory using heat.exe -->
+    <Action Id="wixEnumerateDir" DIR="Path to directory" OUTPUT="Path to output file">         
+        <FileRemove Id="[wixEnumerateDir_OUTPUT]" Optional="yes" />
+        <Launch><![CDATA[ heat.exe dir [wixEnumerateDir_DIR] -pedantic -nologo -gg -ke -sreg -v -template:fragment -out [wixEnumerateDir_OUTPUT] ]]></Launch>        
+    </Action>
+      
+    <!-- ACTION: wixImportComponent - import components from heat-generated wix file into main installer script -->
+    <Action Id="wixImportComponent" DIR="Name of root directory that was enumerated" FILE="Path to heat-generated file">               
+					   
+			<!--// Add [wixImportComponent_DIR] directory to wix file -->
+			<ActionRef Id="wixAddSubDirectory" Quiet="yes" PARENT="INSTALLDIR" NAME="[wixImportComponent_DIR]" QUIET="yes" />     
+			
+			<!--// Create Feature for [wixImportComponent_DIR] components -->		
+			<ActionRef Id="wixAddFeature" Quiet="yes" NAME="[wixImportComponent_DIR]" QUIET="yes" />     
+			
+			<!--// Import components from [wixImportComponent_FILE] -->	
+			<xmlForEach Id="FeatureElement" XPath='/Wix/Product/Feature[@Id="[wixImportComponent_DIR].Feature"]' Quiet='yes'  >
+				<xmlForEach File="[wixImportComponent_FILE]" XPath='/Wix/Fragment/DirectoryRef/Component' Quiet='yes'  >
+					<xmlElementAdd XNode="FeatureElement" Name="ComponentRef" Quiet='yes' >
+						<xmlAttributeSet Quiet="yes" XNode="xmlElementAdd" Name="Id" Value="[xmlForEach?Id]" />
+						<Comment Inline="yes">Imported Id [xmlForEach?Id]</Comment>
+					</xmlElementAdd>
+				</xmlForEach>			
+			</xmlForEach>				
+			
+    </Action>
+    
+    <!-- ACTION: wixAddSubDirectory - Add a new subdirectory  -->
+    <Action Id="wixAddSubDirectory" PARENT="Id of parent directory" NAME="Name of new directory" QUIET="Be quiet">         
+		<xmlElementAdd Quiet='[wixAddSubDirectory_QUIET]' XPath='/Wix' Name="Fragment">
+			<xmlElementAdd Quiet='[wixAddSubDirectory_QUIET]' XNode="xmlElementAdd" Name="DirectoryRef">
+				<xmlAttributeSet Quiet='[wixAddSubDirectory_QUIET]' XNode="xmlElementAdd" Name="Id" Value="[wixAddSubDirectory_PARENT]" />
+				<xmlElementAdd Quiet='[wixAddSubDirectory_QUIET]' XNode='xmlElementAdd' Name="Directory">
+					<xmlAttributeSet Quiet='[wixAddSubDirectory_QUIET]' XNode="xmlElementAdd" Name="Id" Value="[wixAddSubDirectory_NAME]" />
+					<xmlAttributeSet Quiet='[wixAddSubDirectory_QUIET]' XNode="xmlElementAdd" Name="Name" Value="[wixAddSubDirectory_NAME]" />
+				</xmlElementAdd>
+			</xmlElementAdd>
+		</xmlElementAdd>
+    </Action>    
+    
+    <!-- ACTION: wixAddFeature -  adds a new feature called "NAME.Feature" -->
+    <Action Id="wixAddFeature" NAME="Feature name" QUIET="Be quiet">         	
+		<xmlElementAdd Quiet='[wixAddFeature_QUIET]' XPath='/Wix/Product\[@Name="$(var.SetupName)"\]' Name="Feature">
+			<xmlAttributeSet Quiet='[wixAddFeature_QUIET]' XNode="xmlElementAdd" Name="Id" Value="[wixAddFeature_NAME].Feature" />
+			<xmlAttributeSet Quiet='[wixAddFeature_QUIET]' XNode="xmlElementAdd" Name="Level" Value="1" />
+			<xmlAttributeSet Quiet='[wixAddFeature_QUIET]' XNode="xmlElementAdd" Name="Title" Value="$(var.GameName) [wixAddFeature_NAME]" />
+		</xmlElementAdd>	
+    </Action>
+    
+    <!--ACTION: wixRemoveDir - remove dirs and their contents from wix file -->
+    <Action Id="wixRemoveDir" NAME="Directory Name"> 
+        
+        <!--// For each Directory with such filename, find its Id. and remove it using it. -->
+        <xmlForEach Quiet="yes" XPath='/Wix/Fragment/DirectoryRef/Directory\[@Name="[wixRemoveDir_NAME]"\]' >                
+                <ActionRef Quiet="yes" Id="wixRemoveDirId" NAME="[xmlForEach?Id]" />                       
+        </xmlForEach>		
+    </Action>
+    
+    <!--ACTION: wixRemoveDirId - remove dirs and their contents from wix file -->
+    <Action Id="wixRemoveDirId" NAME="Directory Id"> 
+        
+        <!--// For each Directory with such Id -->
+        <xmlForEach Quiet="yes" XPath='/Wix/Fragment/DirectoryRef/Directory\[@Id="[wixRemoveDirId_NAME]"\]' >        
+			<Comment Inline="yes">Removing directory [xmlForEach?Name]</Comment>
+            
+            <!--// For each its sub Directory, recurse into it -->
+            <xmlForEach Quiet="yes" XPath='/Wix/Fragment/DirectoryRef\[@Id="[xmlForEach?Id]"\]/Directory' Optional='yes' >
+                <ActionRef Quiet="yes" Id="wixRemoveDirId" NAME="[xmlForEach?Id]" />    
+            </xmlForEach>        
+        
+            <!--// Remove Fragments which contain references to this Directory -->
+            <xmlElementRemove Quiet="yes" XPath='/Wix/Fragment/DirectoryRef\[@Id="[xmlForEach?Id]"\]/parent::Fragment' />
+            
+            <!--// Remove this Directory itself -->
+            <xmlElementRemove Quiet="yes" XNode='xmlForEach' />         
+                   
+        </xmlForEach>		
+    </Action>
+    
+    <!-- ACTION: wixRemoveDirFileByExt - remove files in specified dir that have filename ending with specified string-->
+    <Action Id="wixRemoveDirFileByExt" DIR="Dir Id" EXT="Right side of string" >
+		<ActionRef Id="xpContainsExt" Quiet="yes" ATTR="@Name" EXT="[wixRemoveDirFileByExt_EXT]" />     
+        <xmlForEach Quiet="yes" XPath='/Wix/Fragment/DirectoryRef\[@Id="[wixRemoveDirFileBySub_DIR]"\]/Component/File\[[xpContainsExt]\]' >
+			<Comment Inline="yes">Removing [xmlForEach?Name]</Comment>
+			<xmlElementRemove Quiet="yes" XPath="[xmlForEach]/ancestor::Fragment"  /> 
+        </xmlForEach>
+    </Action>
+    
+    <!-- ACTION: wixRemoveDirFileBySub - remove files in specified dir that have filename containing specified string-->
+    <Action Id="wixRemoveDirFileBySub" DIR="Dir Id" SUB="Substring" >
+        <xmlForEach Quiet="yes" XPath='/Wix/Fragment/DirectoryRef\[@Id="[wixRemoveDirFileBySub_DIR]"\]/Component/File\[contains(@Name,"[wixRemoveDirFileBySub_SUB]")\]' >
+			<Comment Inline="yes">Removing [xmlForEach?Name]</Comment>
+			<xmlElementRemove Quiet="yes" XPath="[xmlForEach]/ancestor::Fragment"  /> 
+        </xmlForEach>
+    </Action>
+    
+    <!-- ACTION: wixRemoveFileByExt - remove files that have filename ending with specified string-->
+    <Action Id="wixRemoveFileByExt" EXT="Right side of string" >
+		<ActionRef Id="xpContainsExt" Quiet="yes" ATTR="@Name" EXT="[wixRemoveFileByExt_EXT]" />     
+        <xmlForEach Quiet="yes" XPath='/Wix/Fragment/DirectoryRef/Component/File\[[xpContainsExt]\]' >
+			<Comment Inline="yes">Removing [xmlForEach?Name]</Comment>
+			<xmlElementRemove Quiet="yes" XPath="[xmlForEach]/ancestor::Fragment"  /> 
+        </xmlForEach>
+    </Action>
+    
+    <!-- ACTION: wixRemoveFileBySubExt - remove files that have filename ending with specified string-->
+    <Action Id="wixRemoveFileBySubExt"  EXT="Right side of string" SUB="Substring">
+		<ActionRef Id="xpContainsExt" Quiet="yes" ATTR="@Name" EXT="[wixRemoveFileBySubExt_EXT]"  />         
+		<xmlForEach Quiet="yes" XPath='/Wix/Fragment/DirectoryRef/Component/File\[[xpContainsExt] and contains( @Name, "[wixRemoveFileBySubExt_SUB]" )\]' > 
+			<Comment Inline="yes">Removing [xmlForEach?Name]</Comment>
+			<xmlElementRemove Quiet="yes" XPath="[xmlForEach]/ancestor::Fragment"  /> 
+        </xmlForEach>
+    </Action>
+    
+    
+    <!-- ****************************************************************** -->
+    <!--                  XPATH EXPRESSION BUILDERS                  -->
+    <!-- ****************************************************************** -->
+    
+    <!-- ACTION: xpContainsExt - builds an XPath 1.0 predicate for matching string from the right side  -->
+    <Action Id="xpContainsExt" ATTR="Name of attribute form @Attr" EXT="Right side of string" >
+        <Var Id="xpContainsExt" Quiet="yes">(contains( substring( [xpContainsExt_ATTR], string-length( [xpContainsExt_ATTR] ) - string-length( "[xpContainsExt_EXT]" ) + 1, string-length( "[xpContainsExt_EXT]" ) ), "[xpContainsExt_EXT]" ))</Var>
+    </Action>
+    
+</ModBuildActions>

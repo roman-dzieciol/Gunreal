@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<Folder FolderName="WiX">
+		<File FilePath="GunrealInstaller-en-us.wxl" HomeFolder="Yes"/>
+		<File FilePath="GunrealInstaller.wxs" HomeFolder="Yes"/>
+		<File FilePath="GunrealInstallerUI.wxs" HomeFolder="Yes"/>
+	</Folder>
+	<Folder FolderName="ModBuild Config">
+		<File FilePath="ModBuild.xsd" HomeFolder="Yes"/>
+		<File FilePath="ModBuildActions.xml" HomeFolder="Yes"/>
+	</Folder>
+	<Folder FolderName="ModBuild" ValidFileSet="Yes" ValidFile="ModBuild.xsd">
+		<File FilePath="BuildGunrealRelease.xml" HomeFolder="Yes"/>
+		<File FilePath="BuildGunrealScript.xml" HomeFolder="Yes"/>
+	</Folder>
+</Project>

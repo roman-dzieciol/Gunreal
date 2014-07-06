@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2008 rel. 2 sp1 (http://www.altova.com) by www.serials.ws (www.serials.ws) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="ModBuild" targetNamespace="ModBuild">
+	<!-- - - - - - - - - - - Document structure - - - - - - - - - - -->
+	<xs:element name="Action">
+		<xs:annotation>
+			<xs:documentation>Container element for all the basic commands</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:string" use="required"/>
+			<xs:anyAttribute namespace="##any" processContents="lax"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="ActionRef">
+		<xs:annotation>
+			<xs:documentation>Reference to Action element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:string" use="required">
+				<xs:annotation>
+					<xs:documentation>Action name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Quiet" type="YesNoType" use="optional">
+				<xs:annotation>
+					<xs:documentation>Do not print action header</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Optional" type="YesNoType">
+				<xs:annotation>
+					<xs:documentation>Allow failure</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:anyAttribute namespace="##any" processContents="lax"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="ModBuild">
+		<xs:annotation>
+			<xs:documentation>The main container element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Sequence"/>
+				<xs:element ref="Action" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="Version" type="xs:positiveInteger" use="required">
+				<xs:annotation>
+					<xs:documentation>File format version</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="ModBuildActions">
+		<xs:annotation>
+			<xs:documentation>The main container element for actions library file</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Action" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="Version" type="xs:positiveInteger" use="required">
+				<xs:annotation>
+					<xs:documentation>File format version</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Sequence">
+		<xs:annotation>
+			<xs:documentation>Specifies order of execution for Actions</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="ActionRef" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<!-- - - - - - - - - - - Variable definitions - - - - - - - - - - -->
+	<xs:element name="Path">
+		<xs:annotation>
+			<xs:documentation>Creates or modifies a variable. Name is equal Id. Value is set by concatenating Dir and File attributes then substracting from result the Relative attribute. Empty Attributes are skipped. Dir attribute is appended with path separator if one doesn't exist already.  </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Name of the variable</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Dir" type="xs:token">
+				<xs:annotation>
+					<xs:documentation>First part of the variable. Appended with path separator if one doesn't exist already.  </xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="File" type="xs:token">
+				<xs:annotation>
+					<xs:documentation>Second part of the variable.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Relative" type="xs:token">
+				<xs:annotation>
+					<xs:documentation>This string will be substracted from the left side of the resulting variable.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Normalize" type="YesNoType">
+				<xs:annotation>
+					<xs:documentation>Make the path absolute</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Optional" type="YesNoType">
+				<xs:annotation>
+					<xs:documentation>Allow empty</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Var">
+		<xs:annotation>
+			<xs:documentation>Creates a variable using name from Id and value from inner text.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="Id" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>Name of the variable</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="Quiet" type="YesNoType">
+						<xs:annotation>
+							<xs:documentation>Do not print value to log</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="RequireVar">
+		<xs:annotation>
+			<xs:documentation>Requires existence of specified variable</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="Id" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>Name of the variable</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<!-- - - - - - - - - - - XML commands - - - - - - - - - - -->
+	<xs:element name="xmlAttributeSet">
+		<xs:annotation>
+			<xs:documentation>Add/Set attribute in specified element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:token" default="xmlAttributeAdd">
+				<xs:annotation>
+					<xs:documentation>Name of variable in which XPath to result will be stored.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_XML"/>
+			<xs:attribute name="Name" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Attribute name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Value" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Attribute value</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="xmlAttributeRemove">
+		<xs:annotation>
+			<xs:documentation>Remove specified attributes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attributeGroup ref="AG_XML"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="xmlDocument">
+		<xs:annotation>
+			<xs:documentation>Makes all child xmlCommands share instance of this xml document, instead of each of them opening, parsing, and writing it independently.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+			</xs:choice>
+			<xs:attribute name="File" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>XML file path.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Optional" type="YesNoType">
+				<xs:annotation>
+					<xs:documentation>Allow failure</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Quiet" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Do not print value to log</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="xmlElementAdd">
+		<xs:annotation>
+			<xs:documentation>Add/Set element as child of specified element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:string" default="xmlElementAdd">
+				<xs:annotation>
+					<xs:documentation>Name of variable in which XPath to result will be stored.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_XML"/>
+			<xs:attribute name="Name" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Element name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Value" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Element inner text</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="xmlElementRemove">
+		<xs:annotation>
+			<xs:documentation>Remove specified elements</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attributeGroup ref="AG_XML"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="xmlForEach">
+		<xs:annotation>
+			<xs:documentation>XPath xml element iterator. Iterator is stored in the Id variable as XPath expression pointing to current xml element.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:token" default="ForEach">
+				<xs:annotation>
+					<xs:documentation>Variable in which result will be set. Valid only inside this element. By default called [ForEach].</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_XML"/>
+		</xs:complexType>
+	</xs:element>
+	<!-- - - - - - - - - - - File commands - - - - - - - - - - -->
+	<xs:element name="FileConcat">
+		<xs:annotation>
+			<xs:documentation>Append one file to another</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Resulting file path</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="First" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>File that will have another appended to it.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Second" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>File that will be appended.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Optional" type="YesNoType">
+				<xs:annotation>
+					<xs:documentation>Allow failure</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="FileCopy">
+		<xs:annotation>
+			<xs:documentation>Copy file</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attributeGroup ref="AG_FromToFile"/>
+			<xs:attribute name="Overwrite" type="YesNoType"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="FileExists">
+		<xs:annotation>
+			<xs:documentation>Verifies existence of a file. Fails if not optional.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Directory name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_Optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="FileRemove">
+		<xs:annotation>
+			<xs:documentation>Delete file</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>File path</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Optional" type="YesNoType">
+				<xs:annotation>
+					<xs:documentation>Allow failure</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="FileRename">
+		<xs:annotation>
+			<xs:documentation>Rename/Move file</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attributeGroup ref="AG_FromToFile"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="FileWrite">
+		<xs:annotation>
+			<xs:documentation>Write text to file</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="Id" type="xs:token" use="required"/>
+					<xs:attribute name="Mode" type="WriteType" default="Overwrite"/>
+					<xs:attribute name="Encoding" type="EncodingType" default="UTF-8"/>
+					<xs:attributeGroup ref="AG_Optional"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Hardlink">
+		<xs:annotation>
+			<xs:documentation>Hardlink file. With caution may be used as FileCopy alternative.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attributeGroup ref="AG_FromToFile"/>
+		</xs:complexType>
+	</xs:element>
+	<!-- - - - - - - - - - - Directory commands - - - - - - - - - - -->
+	<xs:element name="DirEmpty">
+		<xs:annotation>
+			<xs:documentation>Fails if directory is not empty.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Path</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_Optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="DirExists">
+		<xs:annotation>
+			<xs:documentation>Verifies existence of a directory. Fails if not optional.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Directory name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_Optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="DirMake">
+		<xs:annotation>
+			<xs:documentation>Create a directory</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Directory name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_Optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="DirRemove">
+		<xs:annotation>
+			<xs:documentation>Delete directory</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Directory name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_Optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="DirRename">
+		<xs:annotation>
+			<xs:documentation>Rename/Move directory</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attributeGroup ref="AG_FromToFile"/>
+			<xs:attribute name="Overwrite" type="YesNoType">
+				<xs:annotation>
+					<xs:documentation>Allow overwrite</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SetCurrentDir">
+		<xs:annotation>
+			<xs:documentation>Change current working directory</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Directory path</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<!-- - - - - - - - - - - File system iterators - - - - - - - - - - -->
+	<xs:element name="ForEachDir">
+		<xs:annotation>
+			<xs:documentation>File system iterator</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+				<xs:element ref="Ignore"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:token" default="ForEach">
+				<xs:annotation>
+					<xs:documentation>Name of variable which will contain path to the current directory. Valid only inside this element. By default called [ForEach].</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_ForEachFS"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="ForEachFile">
+		<xs:annotation>
+			<xs:documentation>File system iterator</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="G_Commands"/>
+				<xs:element ref="Ignore"/>
+			</xs:choice>
+			<xs:attribute name="Id" type="xs:token" default="ForEach">
+				<xs:annotation>
+					<xs:documentation>Name of variable which will contain path to the current file. Valid only inside this element. By default called [ForEach].</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_ForEachFS"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Ignore">
+		<xs:annotation>
+			<xs:documentation>Ignore those files during directory traversal</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>File mask</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<!-- - - - - - - - - - - Other - - - - - - - - - - -->
+	<xs:element name="GetSVNVersion">
+		<xs:annotation>
+			<xs:documentation>Creates variables containing repository version names. [Version] contains repository version as integer. [VersionName] contains full repository version name as returned by svnversion utility. If one of the conditions specified aren't met, execution is stopped.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="IdVersion" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Name of variable in which version number will be stored</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="IdName" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Name of variable in which full name of the version will be stored</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="IdFile" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Name of variable in which full and file-system-safe version of the name will be stored. Characters that cannot be used in file names will be replaced with the '-' character.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="AllowRange" type="YesNoType" default="no">
+				<xs:annotation>
+					<xs:documentation>Allow outdated working copy</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="AllowModified" type="YesNoType" default="no">
+				<xs:annotation>
+					<xs:documentation>Allow local modifications</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="AllowSwitched" type="YesNoType" default="no">
+				<xs:annotation>
+					<xs:documentation>Allow switched repository URL</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Repository" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Path to SVN repository</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="WorkingCopy" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Path to working copy</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_Optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="MD5File">
+		<xs:annotation>
+			<xs:documentation>MD5 a file and store hash in ID variable</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Name of variable in which hash will be stored</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Value" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>File path</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attributeGroup ref="AG_Optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="MD5String">
+		<xs:annotation>
+			<xs:documentation>MD5 a string and store hash in ID variable</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Name of variable in which hash will be stored.</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="Value" type="xs:string" use="required">
+				<xs:annotation>
+					<xs:documentation>String to hash</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Launch" type="xs:normalizedString">
+		<xs:annotation>
+			<xs:documentation>Launch an external application</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="Comment">
+		<xs:annotation>
+			<xs:documentation>Write a message to output window.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="Inline" type="YesNoType">
+						<xs:annotation>
+							<xs:documentation>Do not print value to log</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Sandbox">
+		<xs:annotation>
+			<xs:documentation>Application will not modify files outside of this dir.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Id" type="xs:token" use="required">
+				<xs:annotation>
+					<xs:documentation>Directory path</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<!-- - - - - - - - - - - Simple type definitions - - - - - - - - - - -->
+	<xs:simpleType name="EncodingType">
+		<xs:annotation>
+			<xs:documentation>Values of this type will either be "UTF-8" or "ANSI".</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="UTF-8"/>
+			<xs:enumeration value="ANSI"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="WriteType">
+		<xs:annotation>
+			<xs:documentation>Values of this type will either be "Prepend" or "Append" or "Overwrite"</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="Prepend"/>
+			<xs:enumeration value="Append"/>
+			<xs:enumeration value="Overwrite"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="YesNoType">
+		<xs:annotation>
+			<xs:documentation>Values of this type will either be "yes" or "no".</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:NMTOKEN">
+			<xs:enumeration value="no"/>
+			<xs:enumeration value="yes"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- - - - - - - - - - - Attribute groups - - - - - - - - - - -->
+	<xs:attributeGroup name="AG_ForEachFS">
+		<xs:attribute name="Path" type="xs:token" use="required">
+			<xs:annotation>
+				<xs:documentation>Path mask for iteration.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Hidden" type="YesNoType" default="yes">
+			<xs:annotation>
+				<xs:documentation>Use also hidden files/dirs.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Recurse" type="YesNoType" default="no">
+			<xs:annotation>
+				<xs:documentation>Recurse into subdirectories.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Reverse" type="YesNoType" default="no"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="AG_FromToFile">
+		<xs:attribute name="From" type="xs:token" use="required">
+			<xs:annotation>
+				<xs:documentation>Source path.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="To" type="xs:token" use="required">
+			<xs:annotation>
+				<xs:documentation>Target path.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="File" type="xs:token">
+			<xs:annotation>
+				<xs:documentation>Path that will be appended to both From and To paths.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="AG_Optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="AG_Optional">
+		<xs:attribute name="Optional" type="YesNoType">
+			<xs:annotation>
+				<xs:documentation>Allow failure</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="AG_XML">
+		<xs:attribute name="File" type="xs:token">
+			<xs:annotation>
+				<xs:documentation>XML file path.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="XPath" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>XML element XPath. </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="XNode" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>XML element XPath. </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="AG_Optional"/>
+		<xs:attribute name="Quiet" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Do not print value to log</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:attributeGroup>
+	<!-- - - - - - - - - - - Complex type definitions - - - - - - - - - - -->
+	<xs:complexType name="T_Commands">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:group ref="G_Commands"/>
+		</xs:choice>
+	</xs:complexType>
+	<!-- - - - - - - - - - - Element groups - - - - - - - - - - -->
+	<xs:group name="G_Commands">
+		<xs:choice>
+			<xs:element ref="ActionRef"/>
+			<xs:element ref="Comment"/>
+			<xs:element ref="DirEmpty"/>
+			<xs:element ref="DirExists"/>
+			<xs:element ref="DirMake"/>
+			<xs:element ref="DirRemove"/>
+			<xs:element ref="DirRename"/>
+			<xs:element ref="FileConcat"/>
+			<xs:element ref="FileCopy"/>
+			<xs:element ref="FileExists"/>
+			<xs:element ref="FileRemove"/>
+			<xs:element ref="FileRename"/>
+			<xs:element ref="FileWrite"/>
+			<xs:element ref="ForEachDir"/>
+			<xs:element ref="ForEachFile"/>
+			<xs:element ref="GetSVNVersion"/>
+			<xs:element ref="Hardlink"/>
+			<xs:element ref="Launch"/>
+			<xs:element ref="MD5File"/>
+			<xs:element ref="MD5String"/>
+			<xs:element ref="Path"/>
+			<xs:element ref="Sandbox"/>
+			<xs:element ref="SetCurrentDir"/>
+			<xs:element ref="Var"/>
+			<xs:element ref="RequireVar"/>
+			<xs:element ref="xmlAttributeRemove"/>
+			<xs:element ref="xmlAttributeSet"/>
+			<xs:element ref="xmlDocument"/>
+			<xs:element ref="xmlElementAdd"/>
+			<xs:element ref="xmlElementRemove"/>
+			<xs:element ref="xmlForEach"/>
+		</xs:choice>
+	</xs:group>
+</xs:schema>

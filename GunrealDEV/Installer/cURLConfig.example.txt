@@ -1,0 +1,2 @@
+user=user@host.com:password
+url=ftp://www.host.com

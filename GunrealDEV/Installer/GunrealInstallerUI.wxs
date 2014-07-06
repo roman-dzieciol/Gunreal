@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+	xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	
+    <Fragment>
+		
+		<!-- Installer UI -->
+		
+		<UI Id="MB_InstallUI">			
+		
+		    <!-- Properties -->
+			
+		    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR"/>
+		
+		
+		    <!-- Bitmaps -->
+		
+			<Binary Id="MB_UI_Bmp_Banner" SourceFile="..\Bitmaps\bannrbmp.bmp" />
+			<Binary Id="MB_UI_Bmp_Dialog" SourceFile="..\Bitmaps\dlgbmp.bmp" />
+			<Binary Id="MB_UI_Bmp_DialogS" SourceFile="..\Bitmaps\dlgbmp2.bmp" />
+			<Binary Id="MB_UI_Ico_Exclam" SourceFile="..\Bitmaps\exclamic.ico" />
+			<Binary Id="MB_UI_Ico_Info" SourceFile="..\Bitmaps\info.ico" />
+			<Binary Id="MB_UI_Bmp_New" SourceFile="..\Bitmaps\new.ico" />
+			<Binary Id="MB_UI_Bmp_Up" SourceFile="..\Bitmaps\up.ico" /> 
+		
+		
+		    <!-- Fonts -->
+		    
+			<TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+			<TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
+			<TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
+		
+			<Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />            
+		
+		
+		    <!-- Dialog Refs -->
+		    
+			<DialogRef Id="ErrorDlg" />
+			<DialogRef Id="FatalError" />
+			<DialogRef Id="FilesInUse" />
+			<DialogRef Id="MsiRMFilesInUse" />
+			<DialogRef Id="PrepareDlg" />
+			<DialogRef Id="ProgressDlg" />
+			<DialogRef Id="ResumeDlg" />
+			<DialogRef Id="UserExit" />     
+			
+		
+		    <!-- MB_InvalidUT2K4DirDlg -->
+			
+            <Dialog Id="MB_InvalidUT2K4DirDlg" Width="260" Height="85" Title="!(loc.InvalidUT2K4DirDlg_Title)">
+                <Control Id="Back" Type="PushButton" X="72" Y="57" Width="56" Height="17" Default="yes" Cancel="yes" Text="!(loc.WixUIBack)">
+                    <Publish Event="EndDialog" Value="Return">1</Publish>
+                </Control>
+                <Control Id="Ignore" Type="PushButton" X="132" Y="57" Width="56" Height="17" Text="!(loc.WixUIIgnore)">
+                    <Publish Event="EndDialog" Value="Ignore">1</Publish>
+                </Control>
+                <Control Id="Text" Type="Text" X="48" Y="15" Width="194" Height="30" NoPrefix="yes" Text="!(loc.InvalidUT2K4DirDlgText)" />
+                <Control Id="Icon" Type="Icon" X="15" Y="15" Width="24" Height="24" ToolTip="!(loc.InvalidUT2K4DirDlgIconTooltip)" FixedSize="yes" IconSize="32" Text="!(loc.InvalidUT2K4DirDlgIcon)" />
+            </Dialog>  
+			
+		
+		    <!-- MB_InvalidUT2K4VersionDlg -->
+			
+            <Dialog Id="MB_InvalidUT2K4VersionDlg" Width="260" Height="85" Title="!(loc.InvalidUT2K4VersionDlg_Title)">
+                <Control Id="Back" Type="PushButton" X="72" Y="57" Width="56" Height="17" Default="yes" Cancel="yes" Text="!(loc.WixUIBack)">
+                    <Publish Event="EndDialog" Value="Return">1</Publish>
+                </Control>
+                <Control Id="Ignore" Type="PushButton" X="132" Y="57" Width="56" Height="17" Text="!(loc.WixUIIgnore)">
+                    <Publish Event="EndDialog" Value="Ignore">1</Publish>
+                </Control>
+                <Control Id="TextUnable" Type="Text" X="48" Y="15" Width="194" Height="30" NoPrefix="yes" Hidden="yes" Text="!(loc.InvalidUT2K4VersionDlgTextUnable)" >
+                    <Condition Action="show"><![CDATA[NOT MB_UT2K4VERSION OR MB_UT2K4VERSION="0"]]></Condition>
+                </Control>
+                <Control Id="TextTooOld" Type="Text" X="48" Y="15" Width="194" Height="30" NoPrefix="yes" Hidden="yes" Text="!(loc.InvalidUT2K4VersionDlgTextTooOld)" >
+                    <Condition Action="show"><![CDATA[MB_UT2K4VERSION AND NOT MB_UT2K4VERSION="0"]]></Condition>
+                </Control>
+                <Control Id="Icon" Type="Icon" X="15" Y="15" Width="24" Height="24" ToolTip="!(loc.InvalidUT2K4VersionDlgIconTooltip)" FixedSize="yes" IconSize="32" Text="!(loc.InvalidUT2K4VersionDlgIcon)" />
+            </Dialog>
+
+
+		    <!-- MB_InstallDirDlg -->
+			
+			<Dialog Id="MB_InstallDirDlg" Width="370" Height="270" Title="!(loc.MB_InstallDirDlg_Title)">
+				<Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="!(loc.MB_InstallDirDlgInstall)" >
+			        <Publish Event="EndDialog" Value="Return"><![CDATA[OutOfDiskSpace <> 1]]></Publish>
+                    <Publish Event="SpawnDialog" Value="OutOfRbDiskDlg">OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND (PROMPTROLLBACKCOST="P" OR NOT PROMPTROLLBACKCOST)</Publish>
+                    <Publish Event="EndDialog" Value="Return">OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND PROMPTROLLBACKCOST="D"</Publish>
+                    <Publish Event="EnableRollback" Value="False">OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 0 AND PROMPTROLLBACKCOST="D"</Publish>
+                    <Publish Event="SpawnDialog" Value="OutOfDiskDlg">(OutOfDiskSpace = 1 AND OutOfNoRbDiskSpace = 1) OR (OutOfDiskSpace = 1 AND PROMPTROLLBACKCOST="F")</Publish>
+        			<Publish Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+        			<Publish Event="DoAction" Value="WixUIValidatePath" Order="2">1</Publish>
+        			<Publish Event="SpawnDialog" Value="InvalidDirDlg" Order="3"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+        			<Publish Event="DoAction" Value="MB_VerifyUT2K4Dir" Order="4">1</Publish>
+        			<Publish Event="SpawnDialog" Value="MB_InvalidUT2K4DirDlg" Order="5"><![CDATA[MB_UT2K4DIR_VALID<>"1"]]></Publish>
+        			<Publish Event="DoAction" Value="MB_VerifyUT2K4Version" Order="6"><![CDATA[MB_UT2K4DIR_VALID="1"]]></Publish>
+        			<Publish Event="SpawnDialog" Value="MB_InvalidUT2K4VersionDlg" Order="7"><![CDATA[MB_UT2K4DIR_VALID="1" AND NOT MB_UT2K4VERSION>="3369"]]></Publish>
+				</Control>
+				
+				
+				
+				<Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="!(loc.WixUIBack)" />
+				<Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+					<Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+				</Control>
+		
+				<Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.MB_InstallDirDlgDescription)" />
+				<Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.MB_InstallDirDlgTitle)" />
+				<Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.MB_InstallDirDlgBannerBitmap)" />
+				<Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+				<Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+				
+				
+				<Control Id="FolderLabel" Type="Text" X="20" Y="60" Width="290" Height="30" NoPrefix="yes" Text="!(loc.MB_InstallDirDlgFolderLabel)" />
+				<Control Id="Folder" Type="PathEdit" X="20" Y="100" Width="260" Height="18" Property="WIXUI_INSTALLDIR" Indirect="yes" />
+				<Control Id="ChangeFolder" Type="PushButton" X="285" Y="100" Width="56" Height="18" Text="!(loc.MB_InstallDirDlgChange)" >
+				</Control>
+				<Control Id="FolderNote" Type="Text" X="20" Y="140" Width="350" Height="30" NoPrefix="yes" Text="!(loc.MB_InstallDirDlgFolderNote)" />
+			</Dialog>
+		
+		
+		    <!-- MB_ExitDialog -->
+			
+			<Dialog Id="MB_ExitDialog" Width="370" Height="270" Title="!(loc.ExitDialog_Title)">
+				<Control Id="Finish" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Cancel="yes" Text="!(loc.WixUIFinish)" />
+				<Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Disabled="yes" Text="!(loc.WixUICancel)" />
+				<Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="122" Height="234" TabSkip="no" Text="!(loc.ExitDialogBitmap)" />       
+				<Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="!(loc.WixUIBack)" />
+				<Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+				<Control Id="Description" Type="Text" X="135" Y="70" Width="220" Height="40" Transparent="yes" NoPrefix="yes" Text="!(loc.ExitDialogDescription)" />   
+				<Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes" Text="!(loc.ExitDialogTitle)" />       
+				<Control Id="LaunchCheckBox" Type="CheckBox" X="135" Y="190" Width="220" Height="40" Property="LAUNCHAPPONEXIT" CheckBoxValue="1" Hidden="yes" Text="Launch the game when setup exits." >
+					<Condition Action="show">NOT Installed</Condition>
+				</Control>
+			</Dialog>         
+			
+		
+		    <!-- Dialog events -->
+		    
+			<Publish Dialog="MB_ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication" Order="1">LAUNCHAPPONEXIT</Publish>
+			<Publish Dialog="MB_ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
+		
+			<Publish Dialog="MB_InstallDirDlg" Control="ChangeFolder" Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+			<Publish Dialog="MB_InstallDirDlg" Control="ChangeFolder" Event="SpawnDialog" Value="BrowseDlg" Order="2">1</Publish>
+		
+			<Publish Dialog="BrowseDlg" Control="OK" Event="DoAction" Value="WixUIValidatePath" Order="3">1</Publish>
+			<Publish Dialog="BrowseDlg" Control="OK" Event="SpawnDialog" Value="MB_InstallDirDlg" Order="4"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+			
+			<Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="MaintenanceTypeDlg">1</Publish>
+		
+			<Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="MaintenanceTypeDlg">1</Publish>
+		
+			<Publish Dialog="MaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+			<Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+			<Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
+		
+		
+		    <!-- Sequences -->      
+		
+			<InstallUISequence>
+			    
+				<Show Dialog="MB_InstallDirDlg" Before="ProgressDlg">
+				    NOT Installed
+				</Show>
+				
+				<Show Dialog="MB_ExitDialog" OnExit="success" />
+				
+			</InstallUISequence>
+		
+			<AdminUISequence>
+			    
+				<Show Dialog="MB_ExitDialog" OnExit="success" />
+				
+			</AdminUISequence>      
+		
+		</UI>
+		
+		
+	    <!-- UI Refs -->
+		
+		<UIRef Id="WixUI_ErrorProgressText" />
+		<UIRef Id="WixUI_Common" />
+		
+		
+	    <!-- Custom Actions -->
+		
+		<CustomAction Id="LaunchApplication" FileKey="Updater.exe" ExeCommand="" Execute="immediate" Impersonate="yes" Return="asyncNoWait" />
+		
+    </Fragment>
+	
+</Wix>

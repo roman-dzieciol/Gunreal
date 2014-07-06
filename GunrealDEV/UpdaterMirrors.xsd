@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="UpdaterMirrors" targetNamespace="UpdaterMirrors">
+	<xs:element name="url" type="xs:string"/>
+	<xs:element name="updater">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="mirrors"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="mirrors">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="url" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
