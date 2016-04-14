@@ -1,6 +1,4 @@
 # Gunreal
-Extensive UT2004 Modification
-
 Gunreal is a UT2004 mod, completely redoing UT2004's combat and game mechanics with its own weapons and pacing.
 
 It currently features: 
@@ -23,4 +21,5 @@ Website:
 * http://www.moddb.com/mods/gunreal/
 
 Media:
+* http://www.moddb.com/mods/gunreal/downloads/gunreal-trailer-2-hd
 * http://www.moddb.com/mods/gunreal/videos/gunreal-trailer
