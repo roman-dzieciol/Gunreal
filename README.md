@@ -17,6 +17,7 @@ For those who are new to the mod, it essentially builds off UT2004 (though aimin
 
 Since this is NOT UT2004, however, pacing and gameplay is different. Movement is nearly identical to Half-Life 2 and Battlefield 2 (walk/sprint with stamina), and we use a completely original shopping/money system to add an almost RPG-like element of micromanagement and thought to the game. (see the trailer for details) Alongside all the violence and rage, we've put a great deal of thought into the strategy aspects of the game as well, in an attempt to cater to gamers of all play-styles and backgrounds.
 
+![Shopping Interface](/Docs/GunrealLogo.jpg)
 ![Shopping Interface](/Docs/GunrealUI.png)
 
 Website:
